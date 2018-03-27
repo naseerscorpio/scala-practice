@@ -1,1 +1,1 @@
-# scala-practice
+# Scala Practice
