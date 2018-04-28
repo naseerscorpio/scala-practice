@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -10,7 +11,9 @@ public class JavaApp {
     public static void main(String[] args) {
 
         //System.out.println(wordBreak("leetcode", Arrays.asList("leet", "code")));
-        System.out.println(rob(new int[]{1, 4, 2}));
+        //  System.out.println(robII(new int[]{1, 4, 2}));
+        //  minWindow("ADOBECODEBANC", "ABC");
+        canJump(new int[]{2, 3, 1, 1, 4});
     }
 
     // Returns number of pairs with absolute difference less than or equal to mid.
@@ -186,4 +189,205 @@ public class JavaApp {
 
         return Math.max(ifRobbedPrevious, ifDidntRobPrevious);
     }
+
+    public static int robII(int[] nums) {
+        if (nums.length == 1) return nums[0];
+        return Math.max(rob(nums, 0, nums.length - 2), rob(nums, 1, nums.length - 1));
+    }
+
+    public static int rob(int[] nums, int lo, int hi) {
+        int preRob = 0, preNotRob = 0, rob = 0, notRob = 0;
+        for (int i = lo; i <= hi; i++) {
+            rob = preNotRob + nums[i];
+            notRob = Math.max(preRob, preNotRob);
+
+            preNotRob = notRob;
+            preRob = rob;
+        }
+        return Math.max(rob, notRob);
+    }
+
+    public static String minWindow(String s, String t) {
+        HashMap<Character, Integer> map = new HashMap();
+        for (char c : s.toCharArray())
+            map.put(c, 0);
+        for (char c : t.toCharArray()) {
+            if (map.containsKey(c))
+                map.put(c, map.get(c) + 1);
+            else
+                return "";
+        }
+
+        int start = 0, end = 0, minStart = 0, minLen = Integer.MAX_VALUE, counter = t.length();
+        while (end < s.length()) {
+            char c1 = s.charAt(end);
+            if (map.get(c1) > 0)
+                counter--;
+            map.put(c1, map.get(c1) - 1);
+
+            end++;
+
+            while (counter == 0) {
+                if (minLen > end - start) {
+                    minLen = end - start;
+                    minStart = start;
+                }
+
+                char c2 = s.charAt(start);
+                map.put(c2, map.get(c2) + 1);
+
+                if (map.get(c2) > 0)
+                    counter++;
+
+                start++;
+            }
+        }
+        return minLen == Integer.MAX_VALUE ? "" : s.substring(minStart, minStart + minLen);
+    }
+
+    /**
+     * We first intitialize result to 0. We then iterate from
+     * 0 to 31 (an integer has 32 bits). In each iteration:
+     * We first shift result to the left by 1 bit.
+     * Then, if the last digit of input n is 1, we add 1 to result. To
+     * find the last digit of n, we just do: (n & 1)
+     * Example, if n=5 (101), n&1 = 101 & 001 = 001 = 1;
+     * however, if n = 2 (10), n&1 = 10 & 01 = 00 = 0).
+     * <p>
+     * Finally, we update n by shifting it to the right by 1 (n >>= 1). This is because the last digit is already taken care of, so we need to drop it by shifting n to the right by 1.
+     * <p>
+     * At the end of the iteration, we return result.
+     * <p>
+     * Example, if input n = 13 (represented in binary as
+     * 0000_0000_0000_0000_0000_0000_0000_1101, the "_" is for readability),
+     * calling reverseBits(13) should return:
+     * 1011_0000_0000_0000_0000_0000_0000_0000
+     * <p>
+     * Here is how our algorithm would work for input n = 13:
+     * <p>
+     * Initially, result = 0 = 0000_0000_0000_0000_0000_0000_0000_0000,
+     * n = 13 = 0000_0000_0000_0000_0000_0000_0000_1101
+     * <p>
+     * Starting for loop:
+     * i = 0:
+     * result = result << 1 = 0000_0000_0000_0000_0000_0000_0000_0000.
+     * n&1 = 0000_0000_0000_0000_0000_0000_0000_1101
+     * & 0000_0000_0000_0000_0000_0000_0000_0001
+     * = 0000_0000_0000_0000_0000_0000_0000_0001 = 1
+     * therefore result = result + 1 =
+     * 0000_0000_0000_0000_0000_0000_0000_0000
+     * + 0000_0000_0000_0000_0000_0000_0000_0001
+     * = 0000_0000_0000_0000_0000_0000_0000_0001 = 1
+     * <p>
+     * Next, we right shift n by 1 (n >>= 1) (i.e. we drop the least significant bit) to get:
+     * n = 0000_0000_0000_0000_0000_0000_0000_0110.
+     * We then go to the next iteration.
+     * <p>
+     * i = 1:
+     * result = result << 1 = 0000_0000_0000_0000_0000_0000_0000_0010;
+     * n&1 = 0000_0000_0000_0000_0000_0000_0000_0110 &
+     * 0000_0000_0000_0000_0000_0000_0000_0001
+     * = 0000_0000_0000_0000_0000_0000_0000_0000 = 0;
+     * therefore we don't increment result.
+     * We right shift n by 1 (n >>= 1) to get:
+     * n = 0000_0000_0000_0000_0000_0000_0000_0011.
+     * We then go to the next iteration.
+     * <p>
+     * i = 2:
+     * result = result << 1 = 0000_0000_0000_0000_0000_0000_0000_0100.
+     * n&1 = 0000_0000_0000_0000_0000_0000_0000_0011 &
+     * 0000_0000_0000_0000_0000_0000_0000_0001 =
+     * 0000_0000_0000_0000_0000_0000_0000_0001 = 1
+     * therefore result = result + 1 =
+     * 0000_0000_0000_0000_0000_0000_0000_0100 +
+     * 0000_0000_0000_0000_0000_0000_0000_0001 =
+     * result = 0000_0000_0000_0000_0000_0000_0000_0101
+     * We right shift n by 1 to get:
+     * n = 0000_0000_0000_0000_0000_0000_0000_0001.
+     * We then go to the next iteration.
+     * <p>
+     * i = 3:
+     * result = result << 1 = 0000_0000_0000_0000_0000_0000_0000_1010.
+     * n&1 = 0000_0000_0000_0000_0000_0000_0000_0001 &
+     * 0000_0000_0000_0000_0000_0000_0000_0001 =
+     * 0000_0000_0000_0000_0000_0000_0000_0001 = 1
+     * therefore result = result + 1 =
+     * = 0000_0000_0000_0000_0000_0000_0000_1011
+     * We right shift n by 1 to get:
+     * n = 0000_0000_0000_0000_0000_0000_0000_0000 = 0.
+     * <p>
+     * Now, from here to the end of the iteration, n is 0, so (n&1)
+     * will always be 0 and and n >>=1 will not change n. The only change
+     * will be for result <<=1, i.e. shifting result to the left by 1 digit.
+     * Since there we have i=4 to i = 31 iterations left, this will result
+     * in padding 28 0's to the right of result. i.e at the end, we get
+     * result = 1011_0000_0000_0000_0000_0000_0000_0000
+     * <p>
+     * This is exactly what we expected to get
+     */
+    public int reverseBits(int n) {
+        if (n == 0) return 0;
+
+        int result = 0;
+        for (int i = 0; i < 32; i++) {
+            result <<= 1;
+            if ((n & 1) == 1) result++;
+            n >>= 1;
+        }
+        return result;
+    }
+
+    /**
+     * Ist - Input: [2,3,1,1,4]
+     *
+     * @param A
+     * @return
+     */
+    public static boolean canJump(int[] A) {
+        if (A.length <= 1)
+            return true;
+
+        int max = A[0]; //max stands for the largest index that can be reached.
+
+        for (int i = 0; i < A.length; i++) {
+            //if not enough to go to next
+            if (max <= i && A[i] == 0)
+                return false;
+
+            //update max
+            if (i + A[i] > max) {
+                max = i + A[i];
+            }
+
+            //max is enough to reach the end
+            if (max >= A.length - 1)
+                return true;
+
+
+        }
+        return false;
+    }
+
+
+    public int numDecodings(String s) {
+        if (s == null || s.length() == 0) {
+            return 0;
+        }
+        int n = s.length();
+        int[] dp = new int[n + 1];
+        dp[0] = 1;
+        dp[1] = s.charAt(0) != '0' ? 1 : 0;
+        for (int i = 2; i <= n; i++) {
+            int first = Integer.valueOf(s.substring(i - 1, i));
+            int second = Integer.valueOf(s.substring(i - 2, i));
+            if (first >= 1 && first <= 9) {
+                dp[i] += dp[i - 1];
+            }
+            if (second >= 10 && second <= 26) {
+                dp[i] += dp[i - 2];
+            }
+        }
+        return dp[n];
+    }
+
 }
